@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Electrolize|Indie+Flower|Orbitron"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css?family=Electrolize|Indie+Flower|Orbitron" rel="stylesheet" />
 
     <title>I'm a clock</title>
     <style>
@@ -58,7 +55,7 @@
         t = t.replace(/:\d\d /, " ");
       }
       clock.innerHTML = t;
-
+      document.title = t;
       setTimeout(startTime, 1000);
     }
     startTime();
