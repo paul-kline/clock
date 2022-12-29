@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link href="https://fonts.googleapis.com/css?family=Electrolize|Indie+Flower|Orbitron" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Electrolize|Indie+Flower|Orbitron"
+      rel="stylesheet"
+    />
 
     <title>I'm a clock</title>
     <style>
@@ -38,26 +41,174 @@
         align-items: center;
         /* align-items: stretch; */
       }
+      .flex-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        /* align-items: stretch; */
+      }
+      #progress {
+        width: 100%;
+        
+        border-radius: 5px;
+        background-color: rgb(190, 190, 190);
+      }
+      #myBar {
+        width: 1%;
+        height: 30px;
+        border-radius: 5px;
+        background-color: green;
+      }
+      #progress-holder {
+        width: 100vw;
+      }
+      .endpoints {
+        margin-left: 4px;
+        margin-right: 4px;
+      }
     </style>
   </head>
-  <body class="background flex full" style="float:left; margin: 0;">
-    <div id="clock" class=" whitefont font clock pretty"></div>
+  <body class="background flex full" style="float: left; margin: 0;">
+    <div class="whitefont flex-row" id="progress-holder">
+      <div id="from" class="endpoints"></div>
+      <div id="progress">
+        <div id="myBar"></div>
+      </div>
+      <div id="to" class="endpoints"></div>
+    </div>
+    <div id="clock" class="whitefont font clock pretty">hi</div>
   </body>
 
   <script>
-    let clock = document.getElementById("clock");
-    let regex = /:\d\d (PM|AM)/;
-    let t = new Date().toLocaleTimeString();
-    let seconds = false;
-    function startTime() {
-      t = new Date().toLocaleTimeString();
+    let clock = document.getElementById('clock')
+    let regex = /:\d\d (PM|AM)/
+    let t = new Date().toLocaleTimeString()
+    let seconds = false
+    let FROMTIME = undefined
+    let TOTIME = undefined
+    function justTime(date) {
+      t = date.toLocaleTimeString()
       if (!seconds) {
-        t = t.replace(/:\d\d /, " ");
+        t = t.replace(/:\d\d /, ' ')
       }
-      clock.innerHTML = t;
-      document.title = t;
-      setTimeout(startTime, 1000);
+      return t
     }
-    startTime();
+    function startTime() {
+      t = justTime(new Date())
+      clock.innerHTML = t
+      document.title = t
+      setTimeout(startTime, 1000)
+    }
+    startTime()
+
+    init()
+    function init() {
+      const fromTime = findFirstGetParameter([
+        'from',
+        'start',
+        'begin',
+        'first',
+      ])
+      const toTime = findFirstGetParameter(['to', 'end', 'final', 'stop'])
+
+      if (fromTime && toTime) {
+        FROMTIME = interpretTime(fromTime)
+        document.getElementById('from').innerText = justTime(FROMTIME).replace(
+          ' ',
+          '',
+        )
+        TOTIME = interpretTime(toTime)
+        document.getElementById('to').innerText = justTime(TOTIME).replace(
+          ' ',
+          '',
+        )
+
+        console.log('times set', FROMTIME, TOTIME)
+        document.getElementById('progress').style.display = 'flex'
+
+        var i = 0
+        function move() {
+          if (i == 0) {
+            console.log('in move')
+            i = 1
+            var elem = document.getElementById('myBar')
+            var width = 1
+            var id = setInterval(frame, 100)
+            function frame() {
+              if (width >= 100) {
+                clearInterval(id)
+                elem.style.backgroundColor = 'red'
+                i = 0
+              } else {
+                // width++
+                width = ((new Date() - FROMTIME) / (TOTIME - FROMTIME)) * 100
+                elem.style.width = width + '%'
+              }
+            }
+          }
+        }
+        move()
+      } else {
+        document.getElementById('progress').style.display = 'none'
+      }
+    }
+    function interpretTime(str) {
+      str = str.toLowerCase().trim()
+      const colonForm = str.match(/(\d+):(\d+)/)
+      let hours = undefined
+      let minutes = 0
+      if (colonForm && colonForm.length == 3) {
+        hours = parseInt(colonForm[1], 10)
+        minutes = parseInt(colonForm[2], 10)
+      } else {
+        const hasNumber = str.match(/(\d+)/)
+        if (hasNumber) {
+          hours = parseInt(hasNumber[1], 10)
+        }
+      }
+      const hasAM = str.endsWith('am')
+      const hasPM = str.endsWith('pm')
+      if (hasPM) {
+        if (hours !== undefined) {
+          hours += 12
+        }
+      } else if (hasAM && hours == 12) {
+        hours = 0
+      }
+      if (hours !== undefined) {
+        const d = new Date()
+        // if(!hasAM && !hasPM && ){
+
+        // }
+        d.setHours(hours)
+        d.setSeconds(0)
+        d.setMilliseconds(0)
+        d.setMinutes(minutes)
+        return d
+      } else {
+        return undefined
+      }
+    }
+    function findFirstGetParameter(lsnames) {
+      for (let i = 0; i < lsnames.length; i++) {
+        const r = findGetParameter(lsnames[i])
+        if (r) {
+          return r
+        }
+      }
+    }
+    function findGetParameter(parameterName) {
+      var result = null,
+        tmp = []
+      location.search
+        .substr(1)
+        .split('&')
+        .forEach(function (item) {
+          tmp = item.split('=')
+          if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1])
+        })
+      return result
+    }
   </script>
 </html>
