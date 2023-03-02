@@ -171,7 +171,7 @@
       const hasPM = str.endsWith('pm')
       if (hasPM) {
         if (hours !== undefined) {
-          hours += 12
+          hours += hours == 12? 0 : 12
         }
       } else if (hasAM && hours == 12) {
         hours = 0
